@@ -5,7 +5,7 @@ import { getInitialFlightData } from './dataProvider'
 import './App.css';
 
 class App extends Component {
-  constructor(pops) {
+  constructor(props) {
     super(props)
     this.state = {
       data: getInitialFlightData()
@@ -29,7 +29,26 @@ class App extends Component {
         accessor: 'state'
       }
     ]
+
+    this.eventSource = new EventSource('events')
   }
+
+  componentDidMount() {
+    this.eventSource.onmessage = e =>
+    this.updateFlightState(JSON.parse(e.data))
+  }
+
+  updateFlightState(flightState) {
+    let newData = this.state.data.map(item => {
+      if (item.flight === flightState.flight) {
+        item.state = flightState.state
+      }
+      return item
+    })
+
+    this.setState(Object.assign({}, { data: newData }))
+  }
+
 
   render() {
     return (
