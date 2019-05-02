@@ -30,12 +30,23 @@ class App extends Component {
       }
     ]
 
-    this.eventSource = new EventSource('events')
+    this.eventSource = new EventSource('http://localhost:5000/events')
   }
 
   componentDidMount() {
-    this.eventSource.onmessage = e =>
-    this.updateFlightState(JSON.parse(e.data))
+    this.eventSource.addEventListener("flightStateUpdate", e => 
+      this.updateFlightState(JSON.parse(e.data))
+    )
+    this.eventSource.addEventListener("flightRemoval", e => 
+      this.removeFlight(JSON.parse(e.data)))
+  }
+
+  removeFlight(flightInfo) {
+    const newData = this.state.data.filter(
+      item => item.flight !== flightInfo.flight
+    )
+
+    this.setState(Object.assign({}, { data: newData }))
   }
 
   updateFlightState(flightState) {
